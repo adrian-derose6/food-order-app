@@ -8,10 +8,16 @@ import MealsSummary from './MealsSummary';
 const AvailableMeals = () => {
   const [meals, setMeals] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [httpError, setHttpError] = useState(null);
 
   useEffect(() => {
     const fetchMeals = async () => {
       const response = await fetch('https://food-order-app-d2e4c-default-rtdb.firebaseio.com/meals.json');
+      
+      if (!response.ok) {
+        throw new Error('Something went wrong!');
+      }
+      
       const responseData = await response.json();
 
       const loadedMeals = [];
@@ -29,7 +35,10 @@ const AvailableMeals = () => {
       setIsLoading(false);
     };
     
-    fetchMeals();
+    fetchMeals().catch(error => {
+      setIsLoading(false);
+      setHttpError(error.message);
+    });
   }, []);
 
   if (isLoading) {
@@ -37,6 +46,12 @@ const AvailableMeals = () => {
       <section className={classes.MealsLoading}>
         <p>Loading...</p>
       </section>
+    );
+  }
+
+  if (httpError) {
+    return (
+      <p>{httpError}</p>
     );
   }
     
